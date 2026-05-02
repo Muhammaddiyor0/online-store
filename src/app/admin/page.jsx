@@ -98,7 +98,10 @@ export default function AdminPage() {
   if (loading) return <p>Загрузка...</p>
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{
+      padding: 20,
+      color: '#000000b8',
+      }}>
       <h1>Админ панель</h1>
       <p>Вы вошли как: {email}</p>
 

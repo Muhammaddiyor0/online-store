@@ -36,14 +36,14 @@ export default function ProductPage() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>{product.name}</h1>
+      <h1 style={{color:'#000'}}>{product.name}</h1>
       <img
         src={product.image_url}
         alt={product.name}
         style={{ width: 300, borderRadius: 10 }}
       />
-      <h3>{product.prise} $</h3>
-      <p>{product.description}</p>
+      <h3 style={{color:'#000'}}>{product.prise} $</h3>
+      <p style={{color:'#000'}}>{product.description}</p>
       <button
         onClick={addToCart}
         style={{
