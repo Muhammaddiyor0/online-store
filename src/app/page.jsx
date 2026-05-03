@@ -354,102 +354,42 @@ export default function HomePage() {
       </div>
 
       <style jsx>{`
-        @media (max-width: 768px) {
-          .header {
-            gap: 10px !important;
-            padding: 10px 12px !important;
-            flex-wrap: wrap !important;
-            align-items: center !important;
-          }
 
-          .logo {
-            font-size: 18px !important;
-            margin-right: auto !important;
-          }
+      @media (max-width: 768px) {
 
-          .categoryWrap {
-            margin-right: 0 !important;
-          }
-
-          .categoryBtn {
-            padding: 8px 12px !important;
-            font-size: 13px !important;
-            border-radius: 14px !important;
-          }
-
-          .searchInput {
-            width: 100% !important;
-            order: 3 !important;
-            flex: 1 1 100% !important;
-            font-size: 14px !important;
-            padding: 10px 12px !important;
-          }
-
-          .actions {
-            width: 100% !important;
-            order: 4 !important;
-            justify-content: space-between !important;
-            gap: 8px !important;
-          }
-
-          .actionBtn {
-            padding: 9px 12px !important;
-            font-size: 13px !important;
-            width: 100% !important;
-          }
-
-          .productsGrid {
-            display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 10px !important;
-            padding: 10px !important;
-            justify-content: stretch !important;
-          }
-
-          .card {
-            width: auto !important;
-            padding: 10px !important;
-            border-radius: 10px !important;
-          }
-
-          .productImage {
-            height: 120px !important;
-          }
-
-          .productName {
-            font-size: 13px !important;
-            line-height: 1.2 !important;
-            min-height: 32px !important;
-          }
-
-          .price {
-            font-size: 15px !important;
-          }
-
-          .addBtn {
-            padding: 9px !important;
-            font-size: 13px !important;
-          }
-
-          .qtyWrap {
-            gap: 8px !important;
-          }
-
-          .qtyBtn {
-            width: 34px !important;
-            height: 34px !important;
-            font-size: 18px !important;
-          }
-
-          .qtyCount {
-            font-size: 16px !important;
-          }
-
-          .categoryDropdown {
-            width: 230px !important;
-            max-width: calc(100vw - 24px) !important;
-          }
+        .productsGrid {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 10px !important;
+          padding: 10px !important;
         }
+
+        .card {
+          width: 100% !important;
+        }
+
+        .productImage {
+          height: 210px !important;
+        }
+
+        .header {
+          flex-wrap: wrap !important;
+          gap: 10px !important;
+          padding: 10px !important;
+        }
+
+        .searchInput {
+          width: 100% !important;
+          order: 3;
+        }
+
+        .actions {
+          width: 100% !important;
+          justify-content: space-between !important;
+        }
+
+      }
+
       `}</style>
     </div>
   )
