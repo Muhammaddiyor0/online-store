@@ -10,6 +10,7 @@ export default function HomePage() {
   const [showCategories, setShowCategories] = useState(false)
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState({})
+  const [user, setUser] = useState(null)
 
   const categories = [
     'Все',
@@ -32,6 +33,15 @@ export default function HomePage() {
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem('cart') || '{}')
     setCart(storedCart)
+  }, [])
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      setUser(data?.user || null)
+    }
+
+    getUser()
   }, [])
 
   const fetchProducts = async () => {
@@ -71,7 +81,7 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      {/* 🔥 HEADER */}
+      {/* HEADER */}
       <div
         className="header"
         style={{
@@ -83,12 +93,34 @@ export default function HomePage() {
           background: '#EDDF00',
           position: 'sticky',
           top: 0,
-          zIndex: 999
+          zIndex: 999,
+          flexWrap: 'wrap'
         }}
       >
         <h2 className="logo" style={{ color: '#ff0000', margin: 0 }}>
           🛒 Долина
         </h2>
+
+        {user?.email === 'znekpast@gmail.com' && (
+          <div className="adminWrap">
+            <Link href="/admin">
+              <button
+                className="adminBtn"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 20,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  background: '#343434',
+                  color: '#ffffff'
+                }}
+              >
+                ⚙️ Админ
+              </button>
+            </Link>
+          </div>
+        )}
 
         {/* КАТЕГОРИИ */}
         <div
@@ -106,7 +138,7 @@ export default function HomePage() {
               borderRadius: 20,
               border: 'none',
               cursor: 'pointer',
-              background: '#000000',
+              background: '#343434',
               color: '#fff',
               fontWeight: 'bold'
             }}
@@ -171,7 +203,10 @@ export default function HomePage() {
             padding: '10px 15px',
             borderRadius: 25,
             border: 'none',
-            width: 560,
+            width: '100%',
+            maxWidth: 560,
+            minWidth: 240,
+            flex: '1 1 420px',
             outline: 'none',
             fontSize: 16
           }}
@@ -181,43 +216,47 @@ export default function HomePage() {
           className="actions"
           style={{ display: 'flex', gap: 15 }}
         >
-          <Link href="/login">
-            <button
-              className="actionBtn"
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                background: '#EDDF00',
-                color: '#000000'
-              }}
-            >
-              👤 Войти
-            </button>
-          </Link>
+          <div className="loginWrap">
+            <Link href="/login">
+              <button
+                className="actionBtn"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  background: '#EDDF00',
+                  color: '#000000'
+                }}
+              >
+                👤 Войти
+              </button>
+            </Link>
+          </div>
 
-          <Link href="/cart">
-            <button
-              className="actionBtn"
-              style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                background: '#EDDF00',
-                color: '#000000'
-              }}
-            >
-              🛒 Корзина
-            </button>
-          </Link>
+          <div className="cartWrap">
+            <Link href="/cart">
+              <button
+                className="actionBtn"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 20,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  background: '#343434',
+                  color: '#ffffff'
+                }}
+              >
+                🛒 Корзина
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* 🔥 PRODUCTS */}
+      {/* PRODUCTS */}
       <div
         className="productsGrid"
         style={{
@@ -354,42 +393,71 @@ export default function HomePage() {
       </div>
 
       <style jsx>{`
+        @media (max-width: 768px) {
+          .header {
+            display: grid !important;
+            grid-template-columns: 1fr auto auto;
+            grid-template-areas:
+              'logo admin login'
+              'category category cart'
+              'search search search';
+            gap: 10px !important;
+            padding: 10px !important;
+            align-items: center !important;
+          }
 
-      @media (max-width: 768px) {
+          .logo {
+            grid-area: logo;
+            justify-self: start;
+          }
 
-        .productsGrid {
-          display: grid !important;
-          grid-template-columns: repeat(2, 1fr) !important;
-          gap: 10px !important;
-          padding: 10px !important;
+          .adminWrap {
+            grid-area: admin;
+            justify-self: start;
+          }
+
+          .loginWrap {
+            grid-area: login;
+            justify-self: end;
+          }
+
+          .categoryWrap {
+            grid-area: category;
+            margin-right: 0 !important;
+            justify-self: start;
+          }
+
+          .cartWrap {
+            grid-area: cart;
+            justify-self: end;
+          }
+
+          .searchInput {
+            grid-area: search;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+          }
+
+          .actions {
+            display: contents !important;
+          }
+
+          .productsGrid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+            padding: 10px !important;
+          }
+
+          .card {
+            width: 100% !important;
+          }
+
+          .productImage {
+            height: 220px !important;
+          }
         }
-
-        .card {
-          width: 100% !important;
-        }
-
-        .productImage {
-          height: 210px !important;
-        }
-
-        .header {
-          flex-wrap: wrap !important;
-          gap: 10px !important;
-          padding: 10px !important;
-        }
-
-        .searchInput {
-          width: 100% !important;
-          order: 3;
-        }
-
-        .actions {
-          width: 100% !important;
-          justify-content: space-between !important;
-        }
-
-      }
-
       `}</style>
     </div>
   )
