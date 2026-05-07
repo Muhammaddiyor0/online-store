@@ -513,8 +513,9 @@ export default function HomePage() {
         .landingCard {
           border: none;
           border-radius: 18px;
-          background: #343434;
-          color: #fff;
+          border: 2px solid #343434;
+          background: #ffffff;
+          color: #000;
           padding: 18px 14px;
           font-size: 16px;
           font-weight: bold;
