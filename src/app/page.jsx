@@ -8,9 +8,11 @@ export default function HomePage() {
   const [products, setProducts] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('Все')
   const [showCategories, setShowCategories] = useState(false)
+  const [showCategoryLanding, setShowCategoryLanding] = useState(false)
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState({})
   const [user, setUser] = useState(null)
+  
 
   const categories = [
     'Все',
@@ -43,6 +45,15 @@ export default function HomePage() {
 
     getUser()
   }, [])
+
+  useEffect(() => {
+  const visited = sessionStorage.getItem('visitedHome')
+
+  if (!visited) {
+    setShowCategoryLanding(true)
+    sessionStorage.setItem('visitedHome', 'true')
+  }
+}, [])
 
   const fetchProducts = async () => {
     let query = supabase.from('products').select('*')
@@ -77,6 +88,20 @@ export default function HomePage() {
 
     setCart(newCart)
     localStorage.setItem('cart', JSON.stringify(newCart))
+  }
+
+  const openCategory = (cat) => {
+    setSelectedCategory(cat)
+    setShowCategoryLanding(false)
+    setShowCategories(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const goBackToCategories = () => {
+    setSelectedCategory('Все')
+    setShowCategoryLanding(true)
+    setShowCategories(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -169,10 +194,7 @@ export default function HomePage() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => {
-                    setSelectedCategory(cat)
-                    setShowCategories(false)
-                  }}
+                  onClick={() => openCategory(cat)}
                   className="categoryItem"
                   style={{
                     padding: '10px',
@@ -212,10 +234,7 @@ export default function HomePage() {
           }}
         />
 
-        <div
-          className="actions"
-          style={{ display: 'flex', gap: 15 }}
-        >
+        <div className="actions" style={{ display: 'flex', gap: 15 }}>
           <div className="loginWrap">
             <Link href="/login">
               <button
@@ -256,143 +275,259 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* PRODUCTS */}
-      <div
-        className="productsGrid"
-        style={{
-          padding: 20,
-          display: 'flex',
-          gap: 20,
-          flexWrap: 'wrap',
-          justifyContent: 'center'
-        }}
-      >
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="card"
-            style={{
-              border: '1px solid #EFEFEF',
-              padding: 15,
-              width: 210,
-              borderRadius: 12,
-              transition: '0.2s',
-              background: '#EFEFEF'
-            }}
-          >
-            <Link href={`/product/${product.id}`}>
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="productImage"
-                style={{
-                  width: '100%',
-                  height: 230,
-                  objectFit: 'cover',
-                  borderRadius: 10,
-                  cursor: 'pointer'
-                }}
-              />
-            </Link>
+      {/* КНОПКА НАЗАД */}
+      {!showCategoryLanding && (
+        <div className="backRow">
+          <button onClick={goBackToCategories} className="backBtn">
+            ← Назад
+          </button>
+        </div>
+      )}
 
-            <Link href={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
-              <h3
-                className="productName"
-                style={{ color: '#111', cursor: 'pointer', marginBottom: 8 }}
-              >
-                {product.name}
-              </h3>
-            </Link>
-
-            <p
-              className="price"
-              style={{
-                fontWeight: 'bold',
-                color: '#7000FF',
-                fontSize: 18,
-                marginTop: 0
-              }}
-            >
-              {product.prise} сом
+      {/* ПЕРВЫЙ ЭКРАН С КАТЕГОРИЯМИ */}
+      {showCategoryLanding && (
+        <div className="landingWrap">
+          <div className="landingBox">
+            <h1 className="landingTitle">Выбери категорию</h1>
+            <p className="landingText">
+              Нажми на любую категорию, и ниже откроются только нужные товары.
             </p>
 
-            {!cart[product.id] ? (
-              <button
-                onClick={() => updateCart(product, 1)}
-                className="addBtn"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: '#7000FF',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                В корзину
-              </button>
-            ) : (
-              <div
-                className="qtyWrap"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginTop: 5
-                }}
-              >
+            <div className="landingGrid">
+              {categories.map((cat) => (
                 <button
-                  onClick={() => updateCart(product, -1)}
-                  className="qtyBtn"
+                  key={cat}
+                  onClick={() => openCategory(cat)}
+                  className="landingCard"
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRODUCTS */}
+      {!showCategoryLanding && (
+        <div
+          className="productsGrid"
+          style={{
+            padding: 20,
+            display: 'flex',
+            gap: 20,
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}
+        >
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="card"
+              style={{
+                border: '1px solid #EFEFEF',
+                padding: 15,
+                width: 210,
+                borderRadius: 12,
+                transition: '0.2s',
+                background: '#EFEFEF',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <Link href={`/product/${product.id}`}>
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="productImage"
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 8,
-                    border: 'none',
-                    background: '#ddd',
-                    fontSize: 20,
+                    width: '100%',
+                    height: 230,
+                    objectFit: 'cover',
+                    borderRadius: 10,
                     cursor: 'pointer'
                   }}
-                >
-                  -
-                </button>
+                />
+              </Link>
 
-                <span
-                  className="qtyCount"
+              <Link
+                href={`/product/${product.id}`}
+                style={{ textDecoration: 'none' }}
+              >
+                <h3
+                  className="productName"
                   style={{
-                    fontWeight: 'bold',
-                    fontSize: 18,
-                    color: '#000000'
+                    color: '#111',
+                    cursor: 'pointer',
+                    marginBottom: 8,
+                    minHeight: 43,
                   }}
                 >
-                  {cart[product.id].quantity}
-                </span>
+                  {product.name}
+                </h3>
+              </Link>
 
+              <p
+                className="price"
+                style={{
+                  fontWeight: 'bold',
+                  color: '#7000FF',
+                  fontSize: 22,
+                  marginTop:-5,
+                  marginBottom: 5
+                }}
+              >
+                {product.prise} сом
+              </p>
+
+              {!cart[product.id] ? (
                 <button
                   onClick={() => updateCart(product, 1)}
-                  className="qtyBtn"
+                  className="addBtn"
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 8,
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: 10,
                     border: 'none',
                     background: '#7000FF',
                     color: '#fff',
-                    fontSize: 20,
+                    fontWeight: 'bold',
                     cursor: 'pointer'
                   }}
                 >
-                  +
+                  В корзину
                 </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              ) : (
+                <div
+                  className="qtyWrap"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginTop: 5
+                  }}
+                >
+                  <button
+                    onClick={() => updateCart(product, -1)}
+                    className="qtyBtn"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 8,
+                      border: 'none',
+                      background: '#ddd',
+                      fontSize: 20,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    -
+                  </button>
+
+                  <span
+                    className="qtyCount"
+                    style={{
+                      fontWeight: 'bold',
+                      fontSize: 18,
+                      color: '#000000'
+                    }}
+                  >
+                    {cart[product.id].quantity}
+                  </span>
+
+                  <button
+                    onClick={() => updateCart(product, 1)}
+                    className="qtyBtn"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 8,
+                      border: 'none',
+                      background: '#7000FF',
+                      color: '#fff',
+                      fontSize: 20,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <style jsx>{`
+        .backRow {
+          position: sticky;
+          top: 78px;
+          z-index: 998;
+          display: flex;
+          justify-content: flex-start;
+          padding: 12px 20px 0 20px;
+        }
+
+        .backBtn {
+          border: none;
+          background: #343434;
+          color: #fff;
+          padding: 10px 16px;
+          border-radius: 14px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .landingWrap {
+          padding: 18px 20px 0 20px;
+        }
+
+        .landingBox {
+          max-width: 1200px;
+          margin: 0 auto;
+          background: linear-gradient(180deg, #fff7a8 0%, #ffffff 100%);
+          border-radius: 24px;
+          padding: 22px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .landingTitle {
+          margin: 0 0 8px 0;
+          font-size: 32px;
+          color: #111;
+        }
+
+        .landingText {
+          margin: 0 0 18px 0;
+          color: #444;
+          font-size: 16px;
+        }
+
+        .landingGrid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .landingCard {
+          border: none;
+          border-radius: 18px;
+          background: #343434;
+          color: #fff;
+          padding: 18px 14px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+          min-height: 64px;
+        }
+
+        .landingCard:hover {
+          transform: translateY(-2px);
+          opacity: 0.95;
+        }
+
         @media (max-width: 768px) {
           .header {
             display: grid !important;
@@ -445,7 +580,7 @@ export default function HomePage() {
 
           .productsGrid {
             display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 10px !important;
             padding: 10px !important;
           }
@@ -456,6 +591,43 @@ export default function HomePage() {
 
           .productImage {
             height: 220px !important;
+          }
+
+          .landingWrap {
+            padding: 12px 10px 0 10px;
+          }
+
+          .landingBox {
+            padding: 16px;
+            border-radius: 18px;
+          }
+
+          .landingTitle {
+            font-size: 24px;
+          }
+
+          .landingText {
+            font-size: 14px;
+          }
+
+          .landingGrid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+          }
+
+          .landingCard {
+            padding: 14px 10px;
+            font-size: 14px;
+            min-height: 56px;
+          }
+
+          .backRow {
+            top: 72px;
+            padding: 10px 10px 0 10px;
+          }
+
+          .backBtn {
+            width: 100%;
           }
         }
       `}</style>
