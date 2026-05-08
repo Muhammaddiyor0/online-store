@@ -12,10 +12,10 @@ export default function HomePage() {
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState({})
   const [user, setUser] = useState(null)
-  
 
   const categories = [
     'Все',
+    '%Скидки%',
     'Напитки',
     'Молочные',
     'Консервы',
@@ -47,27 +47,33 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-  const visited = sessionStorage.getItem('visitedHome')
+    const visited = sessionStorage.getItem('visitedHome')
 
-  if (!visited) {
-    setShowCategoryLanding(true)
-    sessionStorage.setItem('visitedHome', 'true')
-  }
-}, [])
+    if (!visited) {
+      setShowCategoryLanding(true)
+      sessionStorage.setItem('visitedHome', 'true')
+    }
+  }, [])
 
   const fetchProducts = async () => {
     let query = supabase.from('products').select('*')
-
-    if (selectedCategory !== 'Все') {
-      query = query.eq('category', selectedCategory)
-    }
 
     if (search.trim() !== '') {
       query = query.ilike('name', `%${search}%`)
     }
 
     const { data, error } = await query
-    if (!error) setProducts(data || [])
+    if (error) return
+
+    let result = data || []
+
+    if (selectedCategory === '%Скидки%') {
+      result = result.filter((product) => Number(product.discount_percent) > 0)
+    } else if (selectedCategory !== 'Все') {
+      result = result.filter((product) => product.category === selectedCategory)
+    }
+
+    setProducts(result)
   }
 
   const updateCart = (product, change) => {
@@ -102,6 +108,89 @@ export default function HomePage() {
     setShowCategoryLanding(true)
     setShowCategories(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const getLandingCardStyle = (cat) => {
+    const isDiscount = cat === '%Скидки%'
+    const isSelected = selectedCategory === cat
+
+    if (isDiscount) {
+      return {
+        border: 'none',
+        borderRadius: 18,
+        background: 'linear-gradient(135deg, #ff3b30 0%, #ff9500 55%, #ffd60a 100%)',
+        color: '#fff',
+        padding: '18px 14px',
+        fontSize: 16,
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        transition: 'transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease',
+        minHeight: 64,
+        boxShadow: '0 10px 24px rgba(255, 59, 48, 0.30)',
+        transform: isSelected ? 'scale(1.03)' : 'scale(1)',
+        outline: isSelected ? '3px solid rgba(255, 255, 255, 0.55)' : 'none'
+      }
+    }
+
+    if (isSelected) {
+      return {
+        borderRadius: 18,
+        border: '2px solid #343434',
+        background: '#343434',
+        color: '#fff',
+        padding: '18px 14px',
+        fontSize: 16,
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        transition: 'transform 0.15s ease, opacity 0.15s ease',
+        minHeight: 64,
+        boxShadow: '0 8px 18px rgba(0, 0, 0, 0.14)'
+      }
+    }
+
+    return {
+      borderRadius: 18,
+      border: '2px solid #343434',
+      background: '#ffffff',
+      color: '#000',
+      padding: '18px 14px',
+      fontSize: 16,
+      fontWeight: 'bold',
+      cursor: 'pointer',
+      transition: 'transform 0.15s ease, opacity 0.15s ease',
+      minHeight: 64
+    }
+  }
+
+  const getDropdownItemStyle = (cat) => {
+    const isDiscount = cat === '%Скидки%'
+    const isSelected = selectedCategory === cat
+
+    if (isDiscount) {
+      return {
+        padding: '10px 12px',
+        borderRadius: 10,
+        border: 'none',
+        cursor: 'pointer',
+        textAlign: 'left',
+        fontWeight: 'bold',
+        background: 'linear-gradient(135deg, #ff3b30 0%, #ff9500 55%, #ffd60a 100%)',
+        color: '#fff',
+        boxShadow: '0 8px 18px rgba(255, 59, 48, 0.25)',
+        transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+      }
+    }
+
+    return {
+      padding: '10px 12px',
+      borderRadius: 10,
+      border: 'none',
+      cursor: 'pointer',
+      textAlign: 'left',
+      fontWeight: 'bold',
+      background: isSelected ? '#000' : '#f3f3f3',
+      color: isSelected ? '#fff' : '#000'
+    }
   }
 
   return (
@@ -163,9 +252,16 @@ export default function HomePage() {
               borderRadius: 20,
               border: 'none',
               cursor: 'pointer',
-              background: '#343434',
+              background:
+                selectedCategory === '%Скидки%'
+                  ? 'linear-gradient(135deg, #ff3b30 0%, #ff9500 55%, #ffd60a 100%)'
+                  : '#343434',
               color: '#fff',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              boxShadow:
+                selectedCategory === '%Скидки%'
+                  ? '0 10px 24px rgba(255, 59, 48, 0.28)'
+                  : 'none'
             }}
           >
             {selectedCategory} ▼
@@ -196,16 +292,7 @@ export default function HomePage() {
                   key={cat}
                   onClick={() => openCategory(cat)}
                   className="categoryItem"
-                  style={{
-                    padding: '10px',
-                    borderRadius: 10,
-                    border: 'none',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    background: selectedCategory === cat ? '#000' : '#f3f3f3',
-                    color: selectedCategory === cat ? '#fff' : '#000',
-                    fontWeight: 'bold'
-                  }}
+                  style={getDropdownItemStyle(cat)}
                 >
                   {cat}
                 </button>
@@ -299,6 +386,7 @@ export default function HomePage() {
                   key={cat}
                   onClick={() => openCategory(cat)}
                   className="landingCard"
+                  style={getLandingCardStyle(cat)}
                 >
                   {cat}
                 </button>
@@ -320,140 +408,196 @@ export default function HomePage() {
             justifyContent: 'center'
           }}
         >
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="card"
-              style={{
-                border: '1px solid #EFEFEF',
-                padding: 15,
-                width: 210,
-                borderRadius: 12,
-                transition: '0.2s',
-                background: '#EFEFEF',
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-            >
-              <Link href={`/product/${product.id}`}>
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="productImage"
-                  style={{
-                    width: '100%',
-                    height: 230,
-                    objectFit: 'cover',
-                    borderRadius: 10,
-                    cursor: 'pointer'
-                  }}
-                />
-              </Link>
+          {products.map((product) => {
+            const hasDiscount = Number(product.discount_percent) > 0
+            const originalPrice = Number(product.original_prise ?? product.prise)
+            const currentPrice = Number(product.prise)
 
-              <Link
-                href={`/product/${product.id}`}
-                style={{ textDecoration: 'none' }}
-              >
-                <h3
-                  className="productName"
-                  style={{
-                    color: '#111',
-                    cursor: 'pointer',
-                    marginBottom: 8,
-                    minHeight: 43,
-                  }}
-                >
-                  {product.name}
-                </h3>
-              </Link>
-
-              <p
-                className="price"
+            return (
+              <div
+                key={product.id}
+                className="card"
                 style={{
-                  fontWeight: 'bold',
-                  color: '#7000FF',
-                  fontSize: 22,
-                  marginTop:-5,
-                  marginBottom: 5
+                  border: '1px solid #EFEFEF',
+                  padding: 15,
+                  width: 210,
+                  borderRadius: 12,
+                  transition: '0.2s',
+                  background: '#EFEFEF',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
               >
-                {product.prise} сом
-              </p>
-
-              {!cart[product.id] ? (
-                <button
-                  onClick={() => updateCart(product, 1)}
-                  className="addBtn"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: 10,
-                    border: 'none',
-                    background: '#7000FF',
-                    color: '#fff',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  В корзину
-                </button>
-              ) : (
-                <div
-                  className="qtyWrap"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: 5
-                  }}
-                >
-                  <button
-                    onClick={() => updateCart(product, -1)}
-                    className="qtyBtn"
+                <Link href={`/product/${product.id}`}>
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="productImage"
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 8,
-                      border: 'none',
-                      background: '#ddd',
-                      fontSize: 20,
+                      width: '100%',
+                      height: 230,
+                      objectFit: 'cover',
+                      borderRadius: 10,
                       cursor: 'pointer'
                     }}
-                  >
-                    -
-                  </button>
+                  />
+                </Link>
 
-                  <span
-                    className="qtyCount"
+                <Link
+                  href={`/product/${product.id}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <h3
+                    className="productName"
                     style={{
-                      fontWeight: 'bold',
-                      fontSize: 18,
-                      color: '#000000'
+                      color: '#111',
+                      cursor: 'pointer',
+                      marginBottom: 8,
+                      minHeight: 43
                     }}
                   >
-                    {cart[product.id].quantity}
-                  </span>
+                    {product.name}
+                  </h3>
+                </Link>
 
+                {hasDiscount ? (
+                  <div style={{ marginTop: -5, marginBottom: 5 }}>
+                    <p
+                      style={{
+                        fontWeight: 'bold',
+                        color: '#c00',
+                        fontSize: 13,
+                        margin: 0,
+                        textDecoration: 'line-through'
+                      }}
+                    >
+                      {originalPrice} сом
+                    </p>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 8,
+                        marginTop: 2,
+                        marginBottom: 4,
+                        flexWrap: 'wrap'
+                      }}
+                    >
+                      <p
+                        className="price"
+                        style={{
+                          fontWeight: 'bold',
+                          color: '#7000FF',
+                          fontSize: 22,
+                          margin: 0
+                        }}
+                      >
+                        {currentPrice} сом
+                      </p>
+
+                      <span
+                        style={{
+                          color: '#c00',
+                          fontWeight: 'bold',
+                          fontSize: 13
+                        }}
+                      >
+                        -{product.discount_percent}%
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p
+                    className="price"
+                    style={{
+                      fontWeight: 'bold',
+                      color: '#7000FF',
+                      fontSize: 22,
+                      marginTop: -5,
+                      marginBottom: 5
+                    }}
+                  >
+                    {product.prise} сом
+                  </p>
+                )}
+
+                {!cart[product.id] ? (
                   <button
                     onClick={() => updateCart(product, 1)}
-                    className="qtyBtn"
+                    className="addBtn"
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 8,
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: 10,
                       border: 'none',
                       background: '#7000FF',
                       color: '#fff',
-                      fontSize: 20,
-                      cursor: 'pointer'
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      marginTop: 'auto'
                     }}
                   >
-                    +
+                    В корзину
                   </button>
-                </div>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <div
+                    className="qtyWrap"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: 5
+                    }}
+                  >
+                    <button
+                      onClick={() => updateCart(product, -1)}
+                      className="qtyBtn"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 8,
+                        border: 'none',
+                        background: '#ddd',
+                        fontSize: 20,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      -
+                    </button>
+
+                    <span
+                      className="qtyCount"
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                        color: '#000000'
+                      }}
+                    >
+                      {cart[product.id].quantity}
+                    </span>
+
+                    <button
+                      onClick={() => updateCart(product, 1)}
+                      className="qtyBtn"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 8,
+                        border: 'none',
+                        background: '#7000FF',
+                        color: '#fff',
+                        fontSize: 20,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
@@ -508,20 +652,6 @@ export default function HomePage() {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 12px;
-        }
-
-        .landingCard {
-          border: none;
-          border-radius: 18px;
-          border: 2px solid #343434;
-          background: #ffffff;
-          color: #000;
-          padding: 18px 14px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: transform 0.15s ease, opacity 0.15s ease;
-          min-height: 64px;
         }
 
         .landingCard:hover {
