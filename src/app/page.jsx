@@ -375,7 +375,7 @@ export default function HomePage() {
       {showCategoryLanding && (
         <div className="landingWrap">
           <div className="landingBox">
-            <h1 className="landingTitle">Выбери категорию</h1><br />
+            <h1 className="landingTitle">Выберите категорию</h1><br />
 
             <div className="landingGrid">
               {categories.map((cat) => (
