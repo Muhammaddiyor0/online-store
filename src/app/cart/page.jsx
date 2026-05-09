@@ -32,10 +32,7 @@ export default function CartPage() {
 
   const items = Object.values(cart)
 
-  const total = items.reduce(
-    (sum, item) => sum + item.prise * item.quantity,
-    0
-  )
+  const total = items.reduce((sum, item) => sum + item.prise * item.quantity, 0)
 
   const handleCash = () => {
     alert('Ваш заказ скоро придет 🚚')
@@ -44,7 +41,6 @@ export default function CartPage() {
 
   return (
     <div style={styles.page}>
-
       {/* BACK */}
       <Link href="/">
         <button style={styles.backBtn}>← Назад</button>
@@ -56,18 +52,14 @@ export default function CartPage() {
       <div style={styles.grid}>
         {items.map((p) => (
           <div key={p.id} style={styles.card}>
-
-            <img src={p.image_url} style={styles.img} />
+            <img src={p.image_url} alt={p.name} style={styles.img} />
 
             <div style={styles.body}>
               <h3 style={styles.name}>{p.name}</h3>
               <p style={styles.price}>{p.prise} сом</p>
 
               <div style={styles.qtyRow}>
-                <button
-                  onClick={() => updateCart(p, -1)}
-                  style={styles.qtyBtn}
-                >
+                <button onClick={() => updateCart(p, -1)} style={styles.qtyBtn}>
                   -
                 </button>
 
@@ -81,33 +73,31 @@ export default function CartPage() {
                 </button>
               </div>
             </div>
-
           </div>
         ))}
       </div>
 
       {/* TOTAL */}
-        {items.length > 0 && (
-          <div style={styles.footer}>
-            <h2>Итого: {total} сом</h2>
+      {items.length > 0 && (
+        <div style={styles.footer}>
+          <h2>Итого: {total} сом</h2>
 
-            <button
-              onClick={() => {
-                setShowModal(true)
-                setPaymentType(null)
-              }}
-              style={styles.payBtn}
-            >
-              Оплатить
-            </button>
-          </div>
-        )}
+          <button
+            onClick={() => {
+              setShowModal(true)
+              setPaymentType(null)
+            }}
+            style={styles.payBtn}
+          >
+            Оплатить
+          </button>
+        </div>
+      )}
 
       {/* MODAL */}
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
-
             {!paymentType && (
               <>
                 <h3>Выберите оплату</h3>
@@ -135,9 +125,7 @@ export default function CartPage() {
             {paymentType === 'card' && (
               <>
                 <h3>💳 Карта</h3>
-                <div style={styles.cardBox}>
-                  1234 5678 9012 3456
-                </div>
+                <div style={styles.cardBox}>1234 5678 9012 3456</div>
               </>
             )}
 
@@ -146,22 +134,57 @@ export default function CartPage() {
                 <h3>📱 MBank QR</h3>
                 <img
                   src="https://i.ibb.co/HTWSMtw7/qr.png"
+                  alt="MBank QR"
                   style={styles.qr}
                 />
               </>
             )}
 
-            <button
-              onClick={() => setShowModal(false)}
-              style={styles.close}
-            >
+            <button onClick={() => setShowModal(false)} style={styles.close}>
               Закрыть
             </button>
-
           </div>
         </div>
       )}
 
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .cart-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+            padding: 10px !important;
+            justify-content: stretch !important;
+          }
+
+          .cart-card {
+            width: 100% !important;
+          }
+
+          .cart-img {
+            height: 180px !important;
+          }
+
+          .cart-footer {
+            flex-direction: column !important;
+            gap: 12px !important;
+            align-items: stretch !important;
+          }
+
+          .cart-footer h2 {
+            margin: 0;
+          }
+
+          .cart-footer button {
+            width: 100% !important;
+          }
+
+          .cart-modal {
+            width: calc(100% - 24px) !important;
+            max-width: 360px !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
@@ -236,7 +259,9 @@ const styles = {
     borderRadius: 8,
     border: 'none',
     background: '#4e4e4e',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    color: '#fff',
+    fontWeight: 'bold'
   },
 
   qtyBtnPlus: {
@@ -246,7 +271,8 @@ const styles = {
     border: 'none',
     background: '#7000FF',
     color: '#fff',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    fontWeight: 'bold'
   },
 
   qty: {
@@ -258,7 +284,10 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     borderTop: '2px solid #ddd',
-    paddingTop: 10
+    paddingTop: 10,
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap'
   },
 
   payBtn: {
@@ -277,7 +306,9 @@ const styles = {
     background: 'rgba(0,0,0,0.5)',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    padding: 12,
+    zIndex: 1000
   },
 
   modal: {
@@ -294,7 +325,9 @@ const styles = {
     marginBottom: 10,
     border: 'none',
     background: '#FFD700',
-    borderRadius: 10
+    borderRadius: 10,
+    cursor: 'pointer',
+    fontWeight: 'bold'
   },
 
   cardBtn: {
@@ -304,7 +337,9 @@ const styles = {
     border: 'none',
     background: '#7000FF',
     color: '#fff',
-    borderRadius: 10
+    borderRadius: 10,
+    cursor: 'pointer',
+    fontWeight: 'bold'
   },
 
   mbank: {
@@ -313,7 +348,9 @@ const styles = {
     border: 'none',
     background: '#00B300',
     color: '#fff',
-    borderRadius: 10
+    borderRadius: 10,
+    cursor: 'pointer',
+    fontWeight: 'bold'
   },
 
   cardBox: {
@@ -336,6 +373,8 @@ const styles = {
     border: 'none',
     background: '#ddd',
     borderRadius: 10,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    width: '100%',
+    fontWeight: 'bold'
   }
 }
